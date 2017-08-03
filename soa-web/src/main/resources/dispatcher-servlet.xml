@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util-4.3.xsd
+	http://www.springframework.org/schema/jee
+	http://www.springframework.org/schema/jee/spring-jee-4.3.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd">
+    <!-- 使spring扫描包下的所有类，让标注spring注解的类生效 -->
+    <context:component-scan base-package="com.jun.soa" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController" />
+        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+    </context:component-scan>
+    <!--×××××××××××××××××validation vo验证开始×××××××××××××××××××××××××-->
+    <context:component-scan base-package="com.jun.soa.vo"/>
+    <!-- 指定自己定义的validator -->
+    <mvc:annotation-driven validator="validator"/>
+    <!-- 以下 validator  ConversionService 在使用 mvc:annotation-driven 会 自动注册-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+    </bean>
+    <!--×××××××××××××××××validation vo验证结束×××××××××××××××××××××××××-->
+
+    <!-- 启动mvc注解 -->
+    <mvc:annotation-driven>
+        <!--参数中Pageable 注入实现类 -->
+        <!--<mvc:argument-resolvers>-->
+            <!--<bean class="org.springframework.data.web.PageableHandlerMethodArgumentResolver" />-->
+        <!--</mvc:argument-resolvers>-->
+        <!--由于dubbo反序列化不能序列化含无参构造函数的对象，所以重写PageRequest和PageableHandlerMethodArgumentResolver-->
+        <mvc:argument-resolvers>
+            <bean class="com.jun.soa.resolver.DubboPageableHandlerMethodArgumentResolver" />
+        </mvc:argument-resolvers>
+    </mvc:annotation-driven>
+    <!-- 完成请求和注解POJO的映射 -->
+    <mvc:default-servlet-handler/>
+    <!-- 配置视图解析器 -->
+    <bean
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <!-- 配置自定义视图解析器，通过视图的名字解析视图 -->
+    <!-- 通过order配置视图解析器的顺序，常用的放后面，不常用放前面 ，order越小优先级越高，最大是Integer的最大值 -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+        <property name="order" value="100"/>
+    </bean>
+
+    <!--配置根请求跳转页面-->
+    <mvc:view-controller path="/" view-name="index"/>
+
+    <!-- 总错误处理 -->
+    <bean id="exceptionResolver"
+          class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="defaultErrorView">
+            <value>/error/error</value>
+        </property>
+        <property name="defaultStatusCode">
+            <value>500</value>
+        </property>
+        <property name="warnLogCategory">
+            <value>org.springframework.web.servlet.handler.SimpleMappingExceptionResolver</value>
+        </property>
+    </bean>
+
+    <!-- 配置国际化资源 文件 -->
+    <bean id="messageSource"
+          class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="i18n"></property>
+    </bean>
+    <!-- 配置静态资源文件 访问， springmvc中无法直接访问静态文件，需要映射成 url路径来进行访问 -->
+    <mvc:resources location="/WEB-INF/static/" mapping="/static/**"></mvc:resources>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.jun.soa.interceptor.MyInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+    <import resource="spring-dubbo.xml"/>
+</beans>

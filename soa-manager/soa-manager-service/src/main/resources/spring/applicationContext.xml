@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util-4.3.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd
+    http://www.springframework.org/schema/task
+    http://www.springframework.org/schema/task/spring-task-4.3.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+
+    <!-- 1、配置数据源连接池-->
+    <!-- 1.1 导入数据库配置文件-->
+    <context:property-placeholder location="classpath:properties/application.properties"/>
+    <!-- 1.2配置连接池-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          destroy-method="close">
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="driverClassName" value="${jdbc.driverClass}" />
+        <property name="maxActive" value="${jdbc.maxActive}" />
+        <property name="minIdle" value="${jdbc.minIdle}" />
+    </bean>
+    <!-- 2、 扫描所有带@Service注解的类,根据注解 自动装配-->
+    <context:component-scan base-package="com.jun.soa.service"/>
+    <!--3、dao层-->
+    <!--3.1、 hibernate Entitymanager 和 相关事务-->
+    <import resource="spring-hibernate.xml"/>
+    <!--3.2、 mybatis sqlSessionFactory  和相关事务-->
+    <!--<import resource="spring-mybatis.xml"/>-->
+    <!--4、 dubbo-->
+    <!--4.1引入文件-->
+    <import resource="spring-dubbo.xml"/>
+
+</beans>
