@@ -139,10 +139,18 @@ public class HttpResult extends ResponseEntity<HttpBody> implements Serializable
     }
 }`
 ## 架构思想
-#### 1、验证
+#### 1.验证
 **总体设计思路为：引用Spring validator对Controller传入的Vo数据进行简单验证。**
 
 1. 引入Spring validator 依赖包。
 2. 在Vo要验证的字段上加验证注释。
 3. 在Controller使用Vo接收的参数类型前加个@Valid
 4. 自定义验证需实现Validator 接口。
+
+#### 2、依赖关系
+
+| 依赖关系       | soa-parent    | soa-common  | soa-manager|soa-web|
+| ------------- |:-------------:| -----:|:--------:|-------:|
+|       |  |  | |  |
+|      |   |  |  |  |
+
